@@ -1,8 +1,278 @@
 ---
-title: What Does Fred Hoiberg Have To Do To Win in the Big Ten?
-author: Katy Cowell
+title: "Nebraska's $11-million Question"
+author: "Katy Cowell"
 date: '2022-04-10'
-slug: what-does-fred-hoiberg-have-to-do-to-win
+slug: nebraskas-eleven-million-dollar-question
 categories: []
 tags: []
 ---
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+library(tidyverse)
+library(hoopR)
+library(ggalt)
+library(scales)
+library(waffle)
+library(ggbeeswarm)
+library(ggrepel)
+library(cowplot)
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+bballstats <- read_csv("projectonestats.csv")
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+bigtenschools<- c("Nebraska", "Michigan State", "Iowa", "Minnesota", "Ohio State", "Purdue", "Rutgers", "Northwestern", "Wisconsin", "Maryland", "Michigan", "Penn State", "Illinois", "Indiana")
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+nu <- bballstats %>% filter(School == "Nebraska")
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+bigten <- bballstats %>%
+  filter(School %in% bigtenschools) %>%
+  group_by(School) %>%
+  mutate (
+    DRB = TRB - ORB
+  ) %>%
+  select(School, TRB, ORB, DRB)
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+totalrebounds <- ggplot() + 
+  geom_bar(data=bigten, aes(x=reorder(School, TRB), weight=TRB), fill="light grey") +
+  geom_bar(data=nu, aes(x=reorder(School, TRB), weight=TRB), fill="red") +
+  scale_y_continuous(labels=comma) +
+  coord_flip() + 
+  labs(
+    x="School", 
+    y="Season Total Rebounds", 
+    title="Nebraska Men's Basketball: Not A Rebounding Team", 
+    subtitle="The '21-'22 Huskers were the second worst rebounding team in the Big Ten.", 
+    caption="Source: Sports-Reference.com | By Katy Cowell"
+    ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 9), 
+    plot.subtitle = element_text(size=10), 
+    plot.caption = element_text(size = 7),
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+    ) 
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+bigwide <- bigten %>% 
+  pivot_longer(
+    cols=("DRB" | "ORB"), 
+    names_to="Type", 
+    values_to="Rebounds")
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+reboundbreakdown <- ggplot() + 
+  geom_bar(data=bigwide, aes(x=reorder(School, Rebounds), weight=Rebounds, fill=Type)) + 
+  scale_fill_manual(values =c("red","blue"), name="Rebound Type", labels=c("Defensive Rebound", "Offensive Rebound")) + 
+  coord_flip() + 
+  labs(
+    x="School", 
+    y="Season Total Rebounds", 
+    title="", 
+    subtitle="A breakdown of the '21- '22 basketball season in offensive vs. defensive rebounds.", 
+    caption="Source: Sports-Reference.com | By Katy Cowell"
+    ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 9), 
+    plot.subtitle = element_text(size=10), 
+    plot.caption = element_text(size = 7),
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+    ) 
+```
+After a 1-16 Big Ten season record, there was chatter around Nebraska regarding the job security of one of the state’s highest-paid employees.
+
+Everyone and their brother were talking about whether Nebraska men’s basketball head coach, Fred Hoiberg, should come back for another year. 
+
+There were $18.5 million reasons for him to stay. But a whole lot of public pressure and a not so pretty track record led to a restructured contract that reduced Hoiberg’s buyout to only $11 million dollars. 
+
+Back for a fourth season, what does Fred Hoiberg need to do to win in the Big Ten? 
+
+Game statistics from Sports Reference can help answer this question. 
+
+```{r fig.height=3, message=FALSE, warning=FALSE, echo=FALSE }
+plot_grid(totalrebounds, reboundbreakdown, ncol=1) 
+```
+Rebounding.
+
+Rebounds provide another scoring opportunity, and to put it simply, Nebraska was not the best. Minnesota saved Nebraska from being the worst rebounding team in the Big Ten and also gave them their first conference win. 
+
+How nice of the Golden Gophers.
+
+Following the trend of other Big Ten schools, Nebraska had more defensive rebounds than offensive. However, they did trail behind most of their counterparts in offensive rebounds. 
+
+With an average of 6 rebounds per game, Derrick Walker led the Huskers. And his return next season looks promising for the rebounding game. 
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+hustlestats<- bballstats %>%
+  filter(School %in% bigtenschools) %>%
+ group_by(School) %>%
+ summarize(
+  totalsteals = sum(STL),
+  totalblocks = sum(BLK)) %>%
+  mutate(totalstealsandblocks =totalsteals + totalblocks) %>%
+ select(School, totalsteals, totalblocks)
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+nu <- c("Steals"=230, "Blocks"=87, 103)
+ia <- c("Steals"=264, "Blocks"=156)
+
+iron(
+ waffle(nu, 
+        rows = 10, 
+        title="Nebraska's Hustle Statistics", 
+        xlab="1 square = 1 steal or block", 
+        colors = c("black", "red", "white")
+        ) + 
+   labs(
+     x="Nebraska\n 1 square = 1 steal or block",
+     title="How Many More Blocks Does it Take for Nebraska to Win the Big Ten?", 
+     subtitle="Breaking down the Huskers & Hawkeyes defense by comparing blocks and steals.") + 
+   theme(
+    plot.title = element_text(size = 15, face = "bold"),
+    axis.title = element_text(size = 9.5),
+    axis.title.y = element_blank(),
+    plot.title.position = "plot"
+  ),
+  waffle(
+   ia, 
+   rows = 10, 
+   colors = c("black", "yellow")) + 
+   labs(
+     x = "Iowa",
+     caption="Source: Sports_Reference.com | Graphic by Katy Cowell"
+     )
+)
+```
+Hustle.
+
+Continuing to focus on effort-based plays, hustle statistics look at steals and blocks.
+
+Alonzo Verge Jr. ranked third in the conference with 1.6 steals a game. And thanks to Verge, Nebraska holds its own with the Big Ten Champions when it comes to steals. The Huskers were second in steals behind Iowa.
+
+Blocks are a different story; maybe that’s something to work on in practice. (Write that down Fred.)  
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+shooting <- bballstats %>% 
+  filter(School %in% bigtenschools) %>%
+ group_by(School) %>%
+  summarise(
+    TotalFG =sum(FG),
+    TotalFGA =sum(FGA),
+    TotalFGpct =mean(`FG%`),
+    Total3P =sum(`3P`),
+    Total3PA =sum(`3PA`),
+    Total3Ppct =mean(`3P%`),
+    TotalFT =sum(FT),
+    TotalFTA =sum(FTA),
+    TotalFTpct =mean(`FT%`)
+    ) %>% 
+  mutate(AvgFGpct = TotalFG/TotalFGA,
+         Avg3Ppct =Total3P/Total3PA,
+         AvgFTpct =TotalFT/TotalFTA)
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+nu <- shooting %>% filter(School == "Nebraska")
+
+shooting1 <- ggplot() + 
+  geom_point(data=shooting, aes(x=TotalFG, y=TotalFGpct), color="grey") +
+  geom_point(data=nu, aes(x=TotalFG, y=TotalFGpct), color="red") +
+  geom_text_repel(
+    data=shooting, 
+    aes(x=TotalFG, y=TotalFGpct, label=School)
+  ) + 
+  labs(
+    x="Total Field Goals", 
+    y="Field Goal %", 
+    title="Fred's Offensive Woes", 
+    subtitle="Nebraska basketball, despite what Fred Hoiberg had to say for most of the season, \ndid not have “too many shooters on its team.” Unless you count free throws.", 
+    ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+    ) 
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+shooting2 <- ggplot() + 
+  geom_point(data=shooting, aes(x=Total3P, y=Total3Ppct), color="grey") +
+  geom_point(data=nu, aes(x=Total3P, y=Total3Ppct), color="red") +
+  geom_text_repel(
+    data=shooting, 
+    aes(x=Total3P, y=Total3Ppct, label=School)
+  ) + 
+  labs(
+    subtitle = "Three-Pointers",
+    x="Total Three-Pointers", 
+    y="Three-Pointers %", 
+    ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10, face = "bold"), 
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+    ) 
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE }
+shooting3 <- ggplot() + 
+  geom_point(data=shooting, aes(x=TotalFT, y=TotalFTpct), color="grey") +
+  geom_point(data=nu, aes(x=TotalFT, y=TotalFTpct), color="red") +
+  geom_text_repel(
+    data=shooting, 
+    aes(x=TotalFT, y=TotalFTpct, label=School)
+  ) + 
+  labs(
+    subtitle = "Free Throws",
+    x="Total Free Throws", 
+    y="Free Throw %", 
+    caption="Source: Sports_Reference.com | By Katy Cowell"
+    ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10, face = "bold"),
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+    ) 
+```
+
+```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE, echo=FALSE }
+plot_grid(shooting1, shooting2, shooting3, ncol=1) 
+```
+Shooting.
+
+What was hyped up in the preseason to be a team full of “shooters,” the Nebraska offense boosted by 5-star recruit, Bryce McGowens, still fell short. 
+
+Below average in field goals and three-pointers, the Huskers couldn’t seem to get a consistent offense going last year. Nebraska shot more than most of the Big Ten but had a 50/50 chance of making their shots. Those odds dramatically decrease when looking at three-pointers. Nebraska attempted 701 3-point shots and made only 224 of them. Yikes. 
+
+A bright spot in the offense was free throws. Nebraska was on the upper end of extra point opportunities and took advantage of it more than 70% of the time. 
+
+Fred has his work cut out for him next season. 
+
+With most starters returning, Nebraska has an opportunity to continue the momentum they found in the last few games of the season. They’ve shown they can go toe-to-toe with the best of the conference when effort and discipline are there. 
+
+It’s about time for the ol’ Nebraska faithful at Pinnacle Bank Arena to see some wins.
+
+Note: The code that made these graphics can be found here.
