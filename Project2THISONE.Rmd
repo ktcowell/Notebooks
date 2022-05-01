@@ -209,4 +209,4 @@ Their winning record should come with more fans in seats, TV viewership, NIL dea
 
 The results speak for themselves. 
 
-The code that generated this post and these graphs can be found [here] https://github.com/ktcowell/Notebooks/blob/main/Project2.Rmd.
+The code that generated this post and these graphs can be found [here] https://github.com/ktcowell/Notebooks/blob/main/Project2THISONE.Rmd.
